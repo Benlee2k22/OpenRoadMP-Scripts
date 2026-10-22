@@ -37,10 +37,10 @@ function parseRoute(id:string):FreightOffer|undefined{
 function nearbyRoutes(player:OpenRoadMP.Player):FreightOffer[]{
  if(!player.position)return [];
  const sites=mp.world.companies();
- const nearby=[...sites].map(site=>({site,km:mp.world.distance(player.position!,site.position)/1000})).sort((a,b)=>a.km-b.km).slice(0,12);
+ const nearby=[...sites].map(site=>({site,km:mp.world.distance(player.position!,site.position)/1000})).sort((a,b)=>a.km-b.km).slice(0,5);
  const offers:FreightOffer[]=[];
  for(const {site,km} of nearby){
-  for(const cargo of site.sends.slice(0,12)){
+  for(const cargo of site.sends.slice(0,4)){
    const destinations=sites.filter(d=>!(d.id===site.id&&d.city===site.city)&&d.accepts.includes(cargo))
     .map(d=>({site:d,km:mp.world.distance(site.position,d.position)/1000}))
     .filter(d=>d.km>=20).sort((a,b)=>a.km-b.km);
@@ -53,7 +53,7 @@ function nearbyRoutes(player:OpenRoadMP.Player):FreightOffer[]{
    }
   }
  }
- return offers.sort((a,b)=>a.pickupKm-b.pickupKm||a.deliveryKm-b.deliveryKm).slice(0,30);
+ return offers.sort((a,b)=>a.pickupKm-b.pickupKm||a.deliveryKm-b.deliveryKm).slice(0,8);
 }
 const account=(p:OpenRoadMP.Player)=>String(p.accountId||"name:"+p.name);
 const tiers=[
