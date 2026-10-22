@@ -51,7 +51,7 @@ p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
 <button class="active" data-page="dashboard">Dashboard</button>
 <button data-page="jobs">Jobs</button><button data-page="garage">Garages</button>
 <button data-page="company">Companies & VTCs</button><button data-page="convoys">Convoys</button>
-<button data-page="career">Driver Career</button><button data-page="settings">Settings</button>
+<button data-page="career">Driver Career</button><button data-page="admin" id="adminNav" style="display:none">Admin Tools</button><button data-page="settings">Settings</button>
 </nav><div class="sidebar-footer"><span class="status-dot"></span> GLOBALMP NETWORK<br><span class="muted">Driver services online</span></div></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span><button id="closeTablet" style="background:#6c3eb5;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer">✕ Close</button></div>
 <div id="content">
 <div class="hero"><div class="hero-kicker">✦ YOUR DRIVER SPACE</div><h2 id="welcome">Welcome back, driver</h2><p class="muted">Your journey starts here. Manage your fleet, connect with your VTC and explore the open road.</p></div>
@@ -171,15 +171,21 @@ async function vtc(){
  }
  content.innerHTML=html+'<p id="message"></p>';
 }
+async function admin(){
+ const d=await call("adminState");if(!d.allowed){content.innerHTML='<p>Admin access required.</p>';return;}
+ content.innerHTML='<div class="hero"><h2>Admin Tools</h2><p>Teleport to a city depot for faster freight testing. Only players with the admin role can use this.</p></div><div class="card"><h3>Teleport to city</h3><select id="adminCity">'+d.cities.map(x=>'<option value="'+esc(x.id)+'">'+esc(x.name)+'</option>').join('')+'</select><button data-admin="teleport">Teleport</button><p id="message"></p></div>';
+}
+call("adminState").then(d=>{if(d.allowed)document.querySelector("#adminNav").style.display="block"}).catch(()=>{});
 document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
  const p=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
- try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="jobs")await jobs();else if(p==="company")await vtc();else if(p==="career")await career();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
+ try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="jobs")await jobs();else if(p==="company")await vtc();else if(p==="career")await career();else if(p==="admin")await admin();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
 });
 document.addEventListener("click",async e=>{
- const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-job],[data-action]");if(!b)return;
+ const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-job],[data-action],[data-admin]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
+ if(b.dataset.admin==="teleport"){const result=await call("adminTeleport",document.querySelector("#adminCity").value);message("Teleported to "+result.city);return;}
  if(b.dataset.job){if(b.dataset.job==="cancel"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm cancellation →";message("Click again to cancel your GlobalMP contract. This does not cancel an assigned native ETS2 freight job.");return;}await call("jobsAction",b.dataset.job,b.dataset.id||null);await jobs();return;}
  if(b.dataset.career){await call('careerClaim',b.dataset.career);await career();return;}
  if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm sale →";message("Click Confirm sale again to sell this truck. This cannot be undone.");return;}
