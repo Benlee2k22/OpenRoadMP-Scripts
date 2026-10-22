@@ -1,39 +1,33 @@
-# GlobalMP tablet (freeroam integration)
+# GlobalMP Garage + VTC tablet
 
-This is a **starter tablet**, not yet a replacement for every OpenRoadMP interface. It reads the existing freeroam SQLite-backed player stats and opens the existing garage and company interfaces. Jobs, VTC applications, convoys and settings are placeholders.
+The custom garage reuses the original freeroam `db.ts` tables and `driveSaved()` in `garage.ts`, so existing owned trucks, current truck and tuning are preserved. The dealer keeps freeroam's free-truck model (no new purchases or economy deductions).
 
-## Install (on Ubuntu, server stopped)
+The VTC system is independent from the temporary built-in `mp.companies` feature. It stores company names, memberships, ranks, configurable open/application joining and applications in `freeroam/data/globalmp-vtc.db`. It does **not yet** synchronize membership to the game's top-bar `mp.companies`, implement logo/banner uploads, company bank, statistics or ownership transfer. Do not disable or overwrite your original freeroam database.
 
-Back up the live gamemode **including its data** before editing:
+## Deploy
+
+**Stop the OpenRoadMP server first.** Back up the whole freeroam directory, including its `data` folder:
 
 ```bash
-sudo cp -a /opt/openroadmp/gamemodes/freeroam /opt/openroadmp/gamemodes/freeroam.backup
-cd ~/OpenRoadMP-Scripts && git pull --ff-only
-sudo cp tablet/tablet.ts /opt/openroadmp/gamemodes/freeroam/tablet.ts
-sudo cp tablet/client/tablet.html /opt/openroadmp/gamemodes/freeroam/client/tablet.html
+sudo cp -a /opt/openroadmp/gamemodes/freeroam /opt/openroadmp/gamemodes/freeroam.backup-before-tablet-vtc
+cd ~/OpenRoadMP-Scripts
+git pull --ff-only
+sudo cp tablet/tablet.ts tablet/vtc.ts /opt/openroadmp/gamemodes/freeroam/
+sudo cp tablet/client/tablet.html /opt/openroadmp/gamemodes/freeroam/client/
 ```
 
-Edit `/opt/openroadmp/gamemodes/freeroam/commands.ts`:
-
-1. Add this import with the other imports:
+Keep the existing `/tablet` registration in `commands.ts`:
 
 ```ts
 import { toggleTablet } from "./tablet.ts"
 ```
 
-2. Before the registration function at the bottom, add:
+and inside `registerCommands()`:
 
 ```ts
-command({
-  name: "tablet",
-  de: "öffnet das GlobalMP Tablet",
-  en: "opens the GlobalMP driver tablet",
-  run(player) { toggleTablet(player) },
-})
+command({name:"tablet",de:"Tablet öffnen",en:"Open tablet",run(player){toggleTablet(player)}})
 ```
 
-**Do not** add `tablet` as a separate gamemode in server.cfg: it must run in the same freeroam process so it can access the same database and functions.
+Do not add tablet as a separate gamemode; the code must run within freeroam. Restart OpenRoadMP and test `/tablet`. Confirm both garage and VTC screens work and check the console for type-check errors. Changes to VTC membership survive restarts. This has not been tested on your live server.
 
-Start the server, check that the freeroam type check succeeds, then try `/tablet` in-game. Repeat `/tablet` to close it. If you need to undo the change, stop the server and restore the backup.
-
-This code has not yet been compiled against your server's exact `openroadmp.d.ts`; if the type check fails, capture the error and report it before continuing. The tablet uses the same browser API patterns as the provided `speedometer.ts` example.
+**Important:** This creates a new SQLite file under freeroam/data. Back it up alongside freeroam.db. The public GitHub repo should contain code only, never these databases or server credentials.
