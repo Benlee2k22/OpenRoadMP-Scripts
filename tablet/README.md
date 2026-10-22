@@ -35,3 +35,13 @@ If type checking fails, **do not deploy**; share the error. Otherwise restart fr
 - The existing game's native dealer and other gamemodes are not controlled by this tablet.
 - No truck image assets are shipped; the showroom uses glass cards and manufacturer names.
 - Selling your current truck is blocked to avoid deleting an actively driven vehicle.
+
+## Starter vehicles, achievements and resale
+
+New players with no saved trucks receive one starter truck (Iveco preferred, Renault fallback) **on first opening the tablet garage**. Existing truck owners are marked as already granted; their original garage and tuning remain unchanged. The one-time grant is tracked in `data/globalmp-starters.db`, which must be backed up alongside the original freeroam and VTC databases. The current implementation does not automatically award the starter at connection/spawn before the tablet opens.
+
+Prestige models have delivery milestones checked server-side: Mercedes Actros 25, Scania S/Super 50, Volvo FH16 100. These are purchases after unlocking, not free rewards. Model detection is name-based and needs testing against the actual OpenRoadMP catalog.
+
+The active truck cannot be sold and players must retain at least one truck. Select another owned truck before selling. Sale refunds are 60% of the brand list price. The browser may not support native `confirm()`; the UI falls back to executing the request when unavailable.
+
+**Important:** These changes have not yet been type-checked against the actual freeroam source or tested in-game. Do not overwrite your `data/` directory. On Ubuntu install with `npm install` if `tsc` is missing, then `npm run check` before restarting. Review compile errors before going live.
