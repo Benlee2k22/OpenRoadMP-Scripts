@@ -53,7 +53,10 @@ export function startJob(player:OpenRoadMP.Player,id:unknown){
 }
 export function cancelJob(player:OpenRoadMP.Player){
  const job=active(player);if(!job)throw Error("No active contract");
- db.prepare("UPDATE contracts SET status='cancelled',finished_at=CURRENT_TIMESTAMP WHERE id=? AND account=? AND status='active'").run(job.id,account(player));
+ // Cancel the native freight first. If it fails, preserve the GlobalMP contract.
+ if(job.awaiting && player.job)mp.players.cancelJob(player);
+ if(job.awaiting)mp.players.navigateTo(player,null);
+ db.prepare("UPDATE contracts SET status='cancelled',awaiting=0,route=NULL,finished_at=CURRENT_TIMESTAMP WHERE id=? AND account=? AND status='active'").run(job.id,account(player));
  return jobsState(player);
 }
 export function claimJob(player:OpenRoadMP.Player){
