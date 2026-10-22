@@ -32,7 +32,8 @@ const prices: Record<string,number> = {
  "Mack": 90000, "Western Star": 98000, "Freightliner": 85000
 };
 export const priceOf = (brand:string):number => prices[brand] ?? 90000;
-const catalog=()=>mp.vehicles.trucks().filter(t=>!t.name.includes("/"));
+// One catalog for display and purchase validation: DLC trucks are excluded server-side.
+const catalog=()=>mp.vehicles.trucks().filter(t=>!t.name.includes("/") && !t.dlc);
 export function dealershipState(player:OpenRoadMP.Player) {
  starter(player);
  const p=loadPlayer(player,SETTINGS.startMoney);
