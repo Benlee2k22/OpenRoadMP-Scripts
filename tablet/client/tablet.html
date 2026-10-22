@@ -14,7 +14,7 @@ main{flex:1;padding:28px;overflow:auto}.top{display:flex;justify-content:space-b
 <button data-page="jobs">Jobs</button><button data-page="garage">Garages</button>
 <button data-page="company">Companies & VTCs</button><button data-page="convoys">Convoys</button>
 <button data-page="settings">Settings</button>
-</nav></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span></div>
+</nav></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span><button id="closeTablet" style="background:#6c3eb5;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer">✕ Close</button></div>
 <div id="content"><p class="muted" id="welcome">Loading driver details…</p>
 <div class="cards">
 <div class="card"><div class="muted">Balance</div><div class="value" id="money">—</div></div>
@@ -24,6 +24,13 @@ main{flex:1;padding:28px;overflow:auto}.top{display:flex;justify-content:space-b
 <button data-action="garage">Open my garage →</button><button data-action="company">Open company management →</button>
 </div><p id="message"></p></div></main></div>
 <script>
+// Match OpenRoadMP's built-in editor: capture the mouse while the tablet is open.
+if (window.mp && typeof mp.cursor === "function") mp.cursor(true);
+const closeTablet = () => {
+  if (window.mp && typeof mp.cursor === "function") mp.cursor(false);
+  if (window.mp && typeof mp.emitServer === "function") mp.emitServer("closeTablet");
+};
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeTablet(); });
 const call = (name,...args)=>window.mp && typeof mp.callServer==="function" ? mp.callServer(name,...args) : Promise.reject(new Error("OpenRoadMP browser API unavailable"));
 const content=document.querySelector("#content"), original=content.innerHTML;
 async function overview(){
@@ -51,5 +58,6 @@ document.addEventListener("click",async e=>{
  try{const r=await call("action",b.dataset.action);const m=document.querySelector("#message");if(m)m.textContent=r.ok?"Opened existing interface.":r.message;}
  catch(err){const m=document.querySelector("#message");if(m)m.textContent=err.message;}
 });
+document.querySelector("#closeTablet").onclick=closeTablet;
 overview();
 </script></body></html>
