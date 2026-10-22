@@ -13,12 +13,12 @@ export function toggleTablet(player:OpenRoadMP.Player):void {
  page.on("garageState",who=>({
   owned:trucksOf(who).map(t=>({id:t.id,label:t.label,parts:t.tuning?.parts.length??0})),
   current:currentTruck(who)?.id??null,slots:SETTINGS.garageSlots,
-  dealer:mp.vehicles.trucks().filter(t=>!t.name.includes("/")).map(t=>({name:t.name,label:t.brand+" "+t.model,brand:t.brand,dlc:!!t.dlc}))
+  dealer:[] // Only already-owned trucks may be driven from the tablet.
  }));
  page.on("garageAction",(who,action:string,value:unknown)=>{
   if(action==="drive"){const truck=getTruck(who,Number(value));if(!truck)throw Error("Truck not found.");driveSaved(who,truck);}
   else if(action==="giveback"){const truck=getTruck(who,Number(value));if(!truck)throw Error("Truck not found.");if(currentTruck(who)?.id===truck.id)throw Error("Cannot give back your current truck.");deleteTruck(who,truck.id);}
-  else if(action==="take"){if(trucksOf(who).length>=SETTINGS.garageSlots)throw Error("Garage full.");const info=mp.vehicles.trucks().find(t=>t.name===String(value)&&!t.name.includes("/"));if(!info)throw Error("Truck not available.");const id=addTruck(who,info.name,info.brand+" "+info.model);const saved=getTruck(who,id);if(saved)driveSaved(who,saved);}
+  else if(action==="take") throw Error("Vehicles must be purchased through the authorised dealership before appearing in your garage.");
   else throw Error("Unknown garage action.");
   return {ok:true};
  });
