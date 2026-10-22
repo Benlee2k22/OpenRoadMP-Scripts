@@ -191,7 +191,7 @@ document.addEventListener("click",async e=>{
  if(action==="leave"&&!confirm("Leave or dissolve this VTC?"))return;
  await call("vtcAction",action,payload);await vtc();
  }
- }catch(err){message(err.message);}
+ }catch(err){const detail=String(err?.message||err||"Unknown error");message("Action failed: "+detail);const panel=document.querySelector("#content")||document.querySelector("main");if(panel){const notice=document.createElement("div");notice.setAttribute("role","alert");notice.style.cssText="position:sticky;top:0;z-index:9999;padding:16px;margin:10px 0;border:2px solid #ff6d9e;border-radius:12px;background:#401326;color:white;font-weight:700";notice.textContent="Freight action failed: "+detail;panel.prepend(notice);} }
 });
 document.querySelector("#closeTablet").onclick=closeTablet;
 overview();
