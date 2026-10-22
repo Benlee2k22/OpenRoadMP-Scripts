@@ -39,7 +39,7 @@ h2{font-size:18px;margin:22px 0 13px}h3{font-size:15px;margin:22px 0 10px}
 .actions button{background:linear-gradient(135deg,#a45cf72e,#ffffff0c);border:1px solid #b881f45c;border-radius:16px;color:white;text-align:left;padding:21px;cursor:pointer;transition:.18s;font-weight:650;min-height:66px}
 .actions button:hover{transform:translateY(-2px);background:#7c30be8a;box-shadow:0 12px 28px #5e1c9c55}
 button{font:inherit;cursor:pointer}button:not(nav button):not(.actions button){background:linear-gradient(115deg,#9622e5,#6423b4);border:1px solid #d28dff7d;border-radius:11px;color:white;padding:10px 15px;margin:3px 5px 3px 0;font-weight:600;box-shadow:inset 0 1px #ffffff38}
-button:hover{filter:brightness(1.12)}
+button:hover{filter:brightness(1.12)}button:disabled{opacity:.42;cursor:not-allowed;filter:none!important}
 input,select,textarea{background:#ffffff12;color:white;border:1px solid #b98dd66e;border-radius:10px;padding:12px;margin:5px;max-width:100%}select option{background:#1b1530}
 p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#8754ad;border-radius:12px}
@@ -86,10 +86,11 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const message=e=>{const el=document.querySelector("#message");if(el)el.textContent=e};
 async function garage(){
  const d=await call("garageState");
- content.innerHTML='<p class="muted">Garage: '+d.owned.length+' / '+d.slots+' slots. Existing tuning is preserved.</p><h2>My trucks</h2><div id="owned" class="actions"></div><h2>Get more vehicles</h2><div id="dealer" class="actions"></div><p id="message"></p>';
- document.querySelector("#owned").innerHTML=d.owned.map(t=>'<button data-garage="'+(t.id===d.current?'none':'drive')+'" data-id="'+t.id+'">'+esc(t.label)+' · '+t.parts+' saved parts '+(t.id===d.current?'(Driving)':'— Drive')+'</button>'+(t.id===d.current?'':'<button data-garage="giveback" data-id="'+t.id+'">Give back '+esc(t.label)+'</button>')).join("")||'<p>No trucks yet</p>';
- document.querySelector("#dealer").innerHTML='<div class="card" style="grid-column:1/-1"><strong>Purchases only</strong><p class="muted">Only vehicles you already own appear above. Use the authorised in-game dealership to purchase additional trucks.</p></div>';
-
+ const eur=n=>"€"+Number(n).toLocaleString();
+ content.innerHTML='<div class="hero"><div class="hero-kicker">GLOBALMP MOTOR GROUP</div><h2>My garage & dealership</h2><p>Purchase your next truck, manage your fleet and keep your saved tuning.</p></div><div class="cards"><div class="card"><span class="card-icon">€</span><div class="muted">Available balance</div><div class="value">'+eur(d.money)+'</div></div><div class="card"><span class="card-icon">▣</span><div class="muted">Garage capacity</div><div class="value">'+d.owned.length+' / '+d.slots+'</div></div><div class="card"><span class="card-icon">↗</span><div class="muted">Vehicles owned</div><div class="value">'+d.owned.length+'</div></div></div><h2>My collection</h2><div id="owned" class="actions"></div><h2>Truck showroom</h2><input id="truckFilter" placeholder="Search trucks or manufacturers" style="width:100%;margin:0 0 15px"><div id="dealer" class="actions"></div><p id="message"></p>';
+ document.querySelector("#owned").innerHTML=d.owned.map(t=>'<div class="card"><span class="card-icon">🚛</span><h3>'+esc(t.label)+'</h3><p class="muted">'+t.parts+' saved tuning parts '+(t.id===d.current?' · CURRENT TRUCK':'')+'</p>'+(t.id===d.current?'<span class="muted">Currently driving</span>':'<button data-garage="drive" data-id="'+t.id+'">Drive truck</button><button data-garage="sell" data-id="'+t.id+'">Sell (60% value)</button>')+'</div>').join("")||'<p class="muted">No owned vehicles yet. Browse the showroom below.</p>';
+ const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.catalog.filter(t=>t.label.toLowerCase().includes(q)).slice(0,120).map(t=>'<div class="card"><span class="card-icon">🚚</span><div class="muted">'+esc(t.brand)+'</div><h3>'+esc(t.model)+'</h3><div class="value" style="font-size:22px">'+eur(t.price)+'</div><p class="muted">'+(t.dlc?'Requires DLC':'Standard truck')+'</p><button data-garage="buy" data-id="'+esc(t.name)+'" '+(d.money<t.price||d.owned.length>=d.slots?'disabled':'')+'>Purchase truck</button></div>').join("")};
+ document.querySelector("#truckFilter").oninput=show;show();
 }
 async function vtc(){
  const d=await call("vtcState");let html='';
@@ -115,7 +116,8 @@ document.addEventListener("click",async e=>{
  const b=e.target.closest("[data-garage],[data-vtc],[data-action]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
- if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="giveback"&&!confirm("Give back this truck?"))return;await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
+ if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&!confirm("Sell this truck for 60% of its listed price?"))return;
+ if(b.dataset.garage==="buy"&&!confirm("Purchase this truck using your in-game balance?"))return;await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
  else{
  const action=b.dataset.vtc;let payload={id:Number(b.dataset.id),account:b.dataset.account,role:b.dataset.role,mode:b.dataset.mode,accept:b.dataset.accept==="true"};
  if(action==="create"){payload.name=document.querySelector("#vtcName").value;payload.mode=document.querySelector("#vtcMode").value;}
