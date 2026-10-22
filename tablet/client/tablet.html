@@ -51,7 +51,7 @@ p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
 <button class="active" data-page="dashboard">Dashboard</button>
 <button data-page="jobs">Jobs</button><button data-page="garage">Garages</button>
 <button data-page="company">Companies & VTCs</button><button data-page="convoys">Convoys</button>
-<button data-page="settings">Settings</button>
+<button data-page="career">Driver Career</button><button data-page="settings">Settings</button>
 </nav><div class="sidebar-footer"><span class="status-dot"></span> GLOBALMP NETWORK<br><span class="muted">Driver services online</span></div></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span><button id="closeTablet" style="background:#6c3eb5;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer">✕ Close</button></div>
 <div id="content">
 <div class="hero"><div class="hero-kicker">✦ YOUR DRIVER SPACE</div><h2 id="welcome">Welcome back, driver</h2><p class="muted">Your journey starts here. Manage your fleet, connect with your VTC and explore the open road.</p></div>
@@ -132,6 +132,14 @@ async function garage(){
  const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.catalog.filter(t=>t.label.toLowerCase().includes(q)).slice(0,120).map(t=>'<div class="card truck-card">'+truckPreview(t.brand,t.model)+'<div class="muted">'+esc(t.brand)+'</div><h3>'+esc(t.model)+'</h3><div class="value" style="font-size:22px">'+eur(t.price)+'</div><p class="muted">'+(t.dlc?'Requires DLC':'Standard truck')+'</p><button data-garage="buy" data-id="'+esc(t.name)+'" '+(d.money<t.price||d.owned.length>=d.slots?'disabled':'')+'>Purchase truck</button></div>').join("")};
  document.querySelector("#truckFilter").oninput=show;show();
 }
+async function career(){
+ const d=await call("careerState");
+ const pct=Math.max(0,Math.min(100,Math.round((d.xp-d.levelStart)/(d.nextLevel-d.levelStart)*100)));
+ content.innerHTML='<div class="hero"><div class="hero-kicker">GLOBALMP DRIVER ACADEMY</div><h2>Driver Career · Level '+d.level+'</h2><p>Complete deliveries, gain experience and unlock prestige trucks.</p></div>'+
+ '<div class="cards"><div class="card"><span class="card-icon">★</span><div class="muted">Total XP</div><div class="value">'+d.xp.toLocaleString()+'</div></div><div class="card"><span class="card-icon">▣</span><div class="muted">Completed deliveries</div><div class="value">'+d.deliveries+'</div></div><div class="card"><span class="card-icon">↗</span><div class="muted">Distance driven</div><div class="value">'+Math.round(d.distanceKm).toLocaleString()+' km</div></div></div>'+
+ '<h2>Level progress</h2><div class="card"><div style="height:14px;border-radius:12px;background:#ffffff20;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#7b20df,#d88cff)"></div></div><p class="muted">'+d.xp.toLocaleString()+' / '+d.nextLevel.toLocaleString()+' XP · '+pct+'% of this level</p></div>'+
+ '<h2>Achievements & rewards</h2><div class="actions">'+d.achievements.map(a=>'<div class="card"><span class="card-icon">'+(a.claimed?'✓':a.unlocked?'★':'🔒')+'</span><h3>'+esc(a.name)+'</h3><p class="muted">'+a.deliveries+' completed deliveries required</p><div class="value" style="font-size:20px">€'+a.reward.toLocaleString()+'</div><button data-career="'+esc(a.id)+'" '+(!a.unlocked||a.claimed?'disabled':'')+'>'+(a.claimed?'Reward claimed':a.unlocked?'Claim reward':'Locked')+'</button></div>').join('')+'</div><p id="message"></p>';
+}
 async function vtc(){
  const d=await call("vtcState");let html='';
  if(d.mine){
@@ -150,12 +158,13 @@ async function vtc(){
 document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
  const p=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
- try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="company")await vtc();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
+ try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="company")await vtc();else if(p==="career")await career();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
 });
 document.addEventListener("click",async e=>{
- const b=e.target.closest("[data-garage],[data-vtc],[data-action]");if(!b)return;
+ const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-action]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
+ if(b.dataset.career){await call('careerClaim',b.dataset.career);await career();return;}
  if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm sale →";message("Click Confirm sale again to sell this truck. This cannot be undone.");return;}
  if(b.dataset.garage==="buy"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm purchase →";message("Click Confirm purchase again to spend your balance.");return;}await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
  else{
