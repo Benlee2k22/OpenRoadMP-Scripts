@@ -180,7 +180,7 @@ document.addEventListener("click",async e=>{
  const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-job],[data-action]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
- if(b.dataset.job){if(b.dataset.job==="cancel"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm cancellation →";return;}await call("jobsAction",b.dataset.job,b.dataset.id||null);await jobs();return;}
+ if(b.dataset.job){if(b.dataset.job==="cancel"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm cancellation →";message("Click again to cancel your GlobalMP contract. This does not cancel an assigned native ETS2 freight job.");return;}await call("jobsAction",b.dataset.job,b.dataset.id||null);await jobs();return;}
  if(b.dataset.career){await call('careerClaim',b.dataset.career);await career();return;}
  if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm sale →";message("Click Confirm sale again to sell this truck. This cannot be undone.");return;}
  if(b.dataset.garage==="buy"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm purchase →";message("Click Confirm purchase again to spend your balance.");return;}await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
