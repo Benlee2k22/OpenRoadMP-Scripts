@@ -43,20 +43,47 @@ async function overview(){
  document.querySelector("#distance").textContent=Number(d.distanceKm).toLocaleString(undefined,{maximumFractionDigits:1})+" km";
  }catch(e){document.querySelector("#welcome").textContent="Unable to load data: "+e.message;}
 }
-document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
- document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
- const page=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
- if(page==="dashboard"){overview();return;}
- if(page==="garage"||page==="company"){
- content.innerHTML='<p class="muted">This opens the existing OpenRoadMP '+(page==="garage"?"garage":"company")+' interface.</p><div class="actions"><button data-action="'+page+'">Open '+b.textContent+' →</button></div><p id="message"></p>';
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const message=e=>{const el=document.querySelector("#message");if(el)el.textContent=e};
+async function garage(){
+ const d=await call("garageState");
+ content.innerHTML='<p class="muted">Garage: '+d.owned.length+' / '+d.slots+' slots. Existing tuning is preserved.</p><h2>My trucks</h2><div id="owned" class="actions"></div><h2>Dealership</h2><input id="truckFilter" placeholder="Filter trucks by name" style="padding:12px;background:#251d36;color:white;border:1px solid #584875;border-radius:8px;width:100%;margin-bottom:12px"><div id="dealer" class="actions"></div><p id="message"></p>';
+ document.querySelector("#owned").innerHTML=d.owned.map(t=>'<button data-garage="'+(t.id===d.current?'none':'drive')+'" data-id="'+t.id+'">'+esc(t.label)+' · '+t.parts+' saved parts '+(t.id===d.current?'(Driving)':'— Drive')+'</button>'+(t.id===d.current?'':'<button data-garage="giveback" data-id="'+t.id+'">Give back '+esc(t.label)+'</button>')).join("")||'<p>No trucks yet</p>';
+ const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.dealer.filter(t=>t.label.toLowerCase().includes(q)).slice(0,100).map(t=>'<button data-garage="take" data-id="'+esc(t.name)+'">'+esc(t.label)+(t.dlc?' (DLC)':'')+' — Take and drive</button>').join("")};
+ document.querySelector("#truckFilter").oninput=show;show();
+}
+async function vtc(){
+ const d=await call("vtcState");let html='';
+ if(d.mine){
+ const m=d.mine;html='<h2>'+esc(m.name)+'</h2><p class="muted">Your rank: '+esc(m.role)+' · Joining: '+esc(m.join_mode)+'</p>';
+ if(m.role==="owner")html+='<button data-vtc="mode" data-mode="'+(m.join_mode==="open"?"applications":"open")+'">Switch to '+(m.join_mode==="open"?"Applications":"Open joining")+'</button>';
+ html+='<h3>Members</h3><div class="actions">'+m.members.map(x=>'<div class="card">'+esc(x.display_name)+' ('+esc(x.role)+')'+(m.role==="owner"&&x.role!=="owner"?'<div><button data-vtc="role" data-account="'+esc(x.account)+'" data-role="'+(x.role==="manager"?"driver":"manager")+'">Toggle manager</button><button data-vtc="kick" data-account="'+esc(x.account)+'">Remove</button></div>':'')+'</div>').join("")+'</div>';
+ if(m.role==="owner"||m.role==="manager")html+='<h3>Applications</h3>'+d.applications.map(x=>'<div class="card">'+esc(x.display_name)+' — '+esc(x.message)+' <button data-vtc="review" data-id="'+x.id+'" data-accept="true">Accept</button><button data-vtc="review" data-id="'+x.id+'" data-accept="false">Reject</button></div>').join("");
+ html+='<p><button data-vtc="leave">Leave / dissolve VTC</button></p>';
  }else{
- content.innerHTML='<p class="muted">Coming soon. This module will be connected to the real server system.</p>';
+ html='<h2>Create a VTC</h2><input id="vtcName" placeholder="Company name (3–40 characters)" maxlength="40"><select id="vtcMode"><option value="applications">Applications</option><option value="open">Open joining</option></select><button data-vtc="create">Create VTC</button><h2>VTC Directory</h2>';
+ html+='<div class="actions">'+d.directory.map(x=>'<div class="card"><strong>'+esc(x.name)+'</strong><p>'+x.members+' members · '+esc(x.join_mode)+'</p><button data-vtc="join" data-id="'+x.id+'">'+(x.join_mode==="open"?"Join now":"Apply")+'</button></div>').join("")+'</div>';
+ if(d.pending.length)html+='<p class="muted">Pending applications: '+d.pending.length+'</p>';
  }
+ content.innerHTML=html+'<p id="message"></p>';
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
+ const p=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
+ try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="company")await vtc();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
 });
 document.addEventListener("click",async e=>{
- const b=e.target.closest("[data-action]");if(!b)return;
- try{const r=await call("action",b.dataset.action);const m=document.querySelector("#message");if(m)m.textContent=r.ok?"Opened existing interface.":r.message;}
- catch(err){const m=document.querySelector("#message");if(m)m.textContent=err.message;}
+ const b=e.target.closest("[data-garage],[data-vtc]");if(!b)return;
+ try{
+ if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="giveback"&&!confirm("Give back this truck?"))return;await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
+ else{
+ const action=b.dataset.vtc;let payload={id:Number(b.dataset.id),account:b.dataset.account,role:b.dataset.role,mode:b.dataset.mode,accept:b.dataset.accept==="true"};
+ if(action==="create"){payload.name=document.querySelector("#vtcName").value;payload.mode=document.querySelector("#vtcMode").value;}
+ if(action==="join"){payload.message=prompt("Application message (optional):","")??"";}
+ if(action==="leave"&&!confirm("Leave or dissolve this VTC?"))return;
+ await call("vtcAction",action,payload);await vtc();
+ }
+ }catch(err){message(err.message);}
 });
 document.querySelector("#closeTablet").onclick=closeTablet;
 overview();
