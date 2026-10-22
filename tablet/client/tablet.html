@@ -64,9 +64,21 @@ p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
 <div class="section-head"><h2>Quick access</h2><span class="muted">EXPLORE GLOBALMP</span></div>
 <div class="actions"><button data-action="garage">🚛 &nbsp; My garage & fleet &nbsp; →</button><button data-action="company">♛ &nbsp; My VTC & companies &nbsp; →</button></div><p id="message"></p></div></main></div>
 <script>
-// Match OpenRoadMP's built-in editor: capture the mouse while the tablet is open.
-if (window.mp && typeof mp.cursor === "function") mp.cursor(true);
+// OpenRoadMP may initialise its browser bridge after the first script tick.
+// Reacquire the game cursor while the tablet is open, then release it on close.
+let tabletClosing=false;
+function acquireTabletCursor(){
+ if(tabletClosing)return;
+ try{if(window.mp&&typeof window.mp.cursor==="function")window.mp.cursor(true);}catch(e){console.warn("Tablet cursor:",e);}
+}
+acquireTabletCursor();
+window.addEventListener("load",acquireTabletCursor);
+window.addEventListener("focus",acquireTabletCursor);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)acquireTabletCursor()});
+const cursorRetry=setInterval(acquireTabletCursor,500);
 const closeTablet = () => {
+  tabletClosing=true;
+  clearInterval(cursorRetry);
   if (window.mp && typeof mp.cursor === "function") mp.cursor(false);
   if (window.mp && typeof mp.emitServer === "function") mp.emitServer("closeTablet");
 };
