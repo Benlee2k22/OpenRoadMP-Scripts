@@ -132,6 +132,20 @@ async function garage(){
  const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.catalog.filter(t=>t.label.toLowerCase().includes(q)).slice(0,120).map(t=>'<div class="card truck-card">'+truckPreview(t.brand,t.model)+'<div class="muted">'+esc(t.brand)+'</div><h3>'+esc(t.model)+'</h3><div class="value" style="font-size:22px">'+eur(t.price)+'</div><p class="muted">'+(t.dlc?'Requires DLC':'Standard truck')+'</p><button data-garage="buy" data-id="'+esc(t.name)+'" '+(d.money<t.price||d.owned.length>=d.slots?'disabled':'')+'>Purchase truck</button></div>').join("")};
  document.querySelector("#truckFilter").oninput=show;show();
 }
+async function jobs(){
+ const d=await call("jobsState");
+ const eur=n=>"€"+Number(n).toLocaleString();
+ let html='<div class="hero"><div class="hero-kicker">GLOBALMP FREIGHT EXCHANGE</div><h2>Delivery Contracts</h2><p>Complete real OpenRoadMP deliveries to earn extra contract bonuses. Your standard game payouts and career XP are unchanged.</p></div>'+
+ '<div class="cards"><div class="card"><span class="card-icon">▣</span><div class="muted">Verified deliveries</div><div class="value">'+d.deliveries+'</div></div><div class="card"><span class="card-icon">★</span><div class="muted">Contracts completed</div><div class="value">'+d.history.length+'</div></div><div class="card"><span class="card-icon">€</span><div class="muted">Contract bonuses (recent)</div><div class="value">'+eur(d.history.reduce((s,j)=>s+Number(j.bonus),0))+'</div></div></div>';
+ if(d.active){
+  const a=d.active,pct=Math.round(a.completed/a.required*100);
+  html+='<h2>Active contract</h2><div class="card"><span class="card-icon">🚛</span><h3>'+esc(a.title)+'</h3><p class="muted">'+a.completed+' / '+a.required+' verified deliveries · Bonus '+eur(a.bonus)+'</p><div style="height:12px;background:#ffffff20;border-radius:10px;overflow:hidden"><div style="width:'+pct+'%;height:100%;background:linear-gradient(90deg,#7b20df,#d88cff)"></div></div><p><button data-job="claim" '+(a.completed<a.required?'disabled':'')+'>Claim contract bonus</button><button data-job="cancel">Cancel contract</button></p></div>';
+ }else{
+  html+='<h2>Available contracts</h2><div class="actions">'+d.offers.map(o=>'<div class="card"><span class="card-icon">📦</span><h3>'+esc(o.title)+'</h3><p class="muted">'+esc(o.description)+'</p><div class="value" style="font-size:23px">'+eur(o.bonus)+'</div><button data-job="start" data-id="'+esc(o.id)+'">Accept contract</button></div>').join('')+'</div>';
+ }
+ html+='<h2>Recent completed contracts</h2><div class="actions">'+(d.history.length?d.history.map(j=>'<div class="card"><strong>'+esc(j.tier)+'</strong><p class="muted">'+esc(j.finished_at||"")+'</p><div class="value" style="font-size:21px">'+eur(j.bonus)+'</div></div>').join(''):'<p class="muted">Your completed contracts will appear here.</p>')+'</div><p id="message"></p>';
+ content.innerHTML=html;
+}
 async function career(){
  const d=await call("careerState");
  const pct=Math.max(0,Math.min(100,Math.round((d.xp-d.levelStart)/(d.nextLevel-d.levelStart)*100)));
@@ -158,12 +172,13 @@ async function vtc(){
 document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
  document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
  const p=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
- try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="company")await vtc();else if(p==="career")await career();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
+ try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="jobs")await jobs();else if(p==="company")await vtc();else if(p==="career")await career();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
 });
 document.addEventListener("click",async e=>{
- const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-action]");if(!b)return;
+ const b=e.target.closest("[data-garage],[data-vtc],[data-career],[data-job],[data-action]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
+ if(b.dataset.job){if(b.dataset.job==="cancel"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm cancellation →";return;}await call("jobsAction",b.dataset.job,b.dataset.id||null);await jobs();return;}
  if(b.dataset.career){await call('careerClaim',b.dataset.career);await career();return;}
  if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm sale →";message("Click Confirm sale again to sell this truck. This cannot be undone.");return;}
  if(b.dataset.garage==="buy"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm purchase →";message("Click Confirm purchase again to spend your balance.");return;}await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
