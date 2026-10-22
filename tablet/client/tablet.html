@@ -156,8 +156,8 @@ document.addEventListener("click",async e=>{
  const b=e.target.closest("[data-garage],[data-vtc],[data-action]");if(!b)return;
  if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
- if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&typeof confirm==="function"&&!confirm("Sell this truck for 60% of its listed price?"))return;
- if(b.dataset.garage==="buy"&&typeof confirm==="function"&&!confirm("Purchase this truck using your in-game balance?"))return;await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
+ if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="sell"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm sale →";message("Click Confirm sale again to sell this truck. This cannot be undone.");return;}
+ if(b.dataset.garage==="buy"&&b.dataset.confirmed!=="yes"){b.dataset.confirmed="yes";b.textContent="Confirm purchase →";message("Click Confirm purchase again to spend your balance.");return;}await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
  else{
  const action=b.dataset.vtc;let payload={id:Number(b.dataset.id),account:b.dataset.account,role:b.dataset.role,mode:b.dataset.mode,accept:b.dataset.accept==="true"};
  if(action==="create"){payload.name=document.querySelector("#vtcName").value;payload.mode=document.querySelector("#vtcMode").value;}
