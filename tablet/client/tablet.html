@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+*{box-sizing:border-box}body{margin:0;background:transparent;font:14px system-ui,Arial;color:#eee}
+.tablet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1000px,92vw);height:min(660px,86vh);display:flex;border:2px solid #39304e;border-radius:22px;overflow:hidden;background:#12101d;box-shadow:0 24px 85px #000b}
+aside{width:215px;background:#1d172d;padding:25px 15px;border-right:1px solid #38304b}
+.brand{font-size:23px;font-weight:800;color:#b994ff;margin:4px 10px 32px}nav button{display:block;width:100%;padding:13px;margin-bottom:7px;border:0;border-radius:9px;text-align:left;background:transparent;color:#c9c1d9;cursor:pointer}nav button.active,nav button:hover{background:#7043b5;color:white}
+main{flex:1;padding:28px;overflow:auto}.top{display:flex;justify-content:space-between;align-items:center}.muted{color:#a59bb9}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0}.card{background:#211a31;padding:19px;border:1px solid #40334f;border-radius:12px}.value{font-size:25px;font-weight:750;margin-top:9px;color:white}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.actions button{padding:19px;text-align:left;background:#2a203e;border:1px solid #594377;border-radius:12px;color:white;cursor:pointer}.actions button:hover{background:#44305f}
+#message{margin-top:16px;color:#cfb6ff}.small{font-size:12px}h1{margin:0}button{font:inherit}
+</style></head>
+<body><div class="tablet"><aside><div class="brand">GLOBAL<span style="color:white">MP</span></div><nav>
+<button class="active" data-page="dashboard">Dashboard</button>
+<button data-page="jobs">Jobs</button><button data-page="garage">Garages</button>
+<button data-page="company">Companies & VTCs</button><button data-page="convoys">Convoys</button>
+<button data-page="settings">Settings</button>
+</nav></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span></div>
+<div id="content"><p class="muted" id="welcome">Loading driver details…</p>
+<div class="cards">
+<div class="card"><div class="muted">Balance</div><div class="value" id="money">—</div></div>
+<div class="card"><div class="muted">Deliveries</div><div class="value" id="deliveries">—</div></div>
+<div class="card"><div class="muted">Distance driven</div><div class="value" id="distance">—</div></div>
+</div><h2>Quick actions</h2><div class="actions">
+<button data-action="garage">Open my garage →</button><button data-action="company">Open company management →</button>
+</div><p id="message"></p></div></main></div>
+<script>
+const call = (name,...args)=>window.mp && typeof mp.callServer==="function" ? mp.callServer(name,...args) : Promise.reject(new Error("OpenRoadMP browser API unavailable"));
+const content=document.querySelector("#content"), original=content.innerHTML;
+async function overview(){
+ content.innerHTML=original;
+ try{const d=await call("overview");
+ document.querySelector("#welcome").textContent="Welcome back, "+d.name+" • "+d.server;
+ document.querySelector("#online").textContent=d.online+" online";
+ document.querySelector("#money").textContent="€"+Number(d.money).toLocaleString();
+ document.querySelector("#deliveries").textContent=Number(d.deliveries).toLocaleString();
+ document.querySelector("#distance").textContent=Number(d.distanceKm).toLocaleString(undefined,{maximumFractionDigits:1})+" km";
+ }catch(e){document.querySelector("#welcome").textContent="Unable to load data: "+e.message;}
+}
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll("nav button").forEach(x=>x.classList.toggle("active",x===b));
+ const page=b.dataset.page;document.querySelector("#heading").textContent=b.textContent;
+ if(page==="dashboard"){overview();return;}
+ if(page==="garage"||page==="company"){
+ content.innerHTML='<p class="muted">This opens the existing OpenRoadMP '+(page==="garage"?"garage":"company")+' interface.</p><div class="actions"><button data-action="'+page+'">Open '+b.textContent+' →</button></div><p id="message"></p>';
+ }else{
+ content.innerHTML='<p class="muted">Coming soon. This module will be connected to the real server system.</p>';
+ }
+});
+document.addEventListener("click",async e=>{
+ const b=e.target.closest("[data-action]");if(!b)return;
+ try{const r=await call("action",b.dataset.action);const m=document.querySelector("#message");if(m)m.textContent=r.ok?"Opened existing interface.":r.message;}
+ catch(err){const m=document.querySelector("#message");if(m)m.textContent=err.message;}
+});
+overview();
+</script></body></html>
