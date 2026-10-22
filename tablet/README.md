@@ -45,3 +45,11 @@ Prestige models have delivery milestones checked server-side: Mercedes Actros 25
 The active truck cannot be sold and players must retain at least one truck. Select another owned truck before selling. Sale refunds are 60% of the brand list price. The browser may not support native `confirm()`; the UI falls back to executing the request when unavailable.
 
 **Important:** These changes have not yet been type-checked against the actual freeroam source or tested in-game. Do not overwrite your `data/` directory. On Ubuntu install with `npm install` if `tsc` is missing, then `npm run check` before restarting. Review compile errors before going live.
+
+## Phase 3: Driver Career (October 2026)
+
+Copy `tablet/progression.ts`, `tablet/tablet.ts`, and `tablet/client/tablet.html` to freeroam. The new Driver Career page displays XP, levels, deliveries, kilometres and seven one-time reward milestones. XP is derived from existing freeroam delivery and distance stats: 250 per completed delivery plus 1 per 10km. This is a calculated career score, not a new delivery event hook. Existing delivery payments are unchanged.
+
+Rewards are claimed manually, credited using the existing money API and saved in `data/globalmp-progression.db`. Back up this new database alongside `freeroam.db`, `globalmp-starters.db` and VTC data. The current reward claim implementation writes the claim record and balance in separate databases, so unexpected process failure between writes could cause a partial reward; it needs a single-database transaction or recovery ledger before high-scale production.
+
+The existing dealership achievement gates use completed-delivery totals (25/50/100) and are not tied to clicking Claim Reward. This version does not modify the game's base delivery payout or native XP. It has not been typechecked on your server. Run `npm run check` before restarting.
