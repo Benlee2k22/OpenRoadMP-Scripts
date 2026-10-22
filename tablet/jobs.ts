@@ -87,9 +87,16 @@ export function assignFreight(player:OpenRoadMP.Player,routeId:unknown){
 mp.events.on("jobDelivered",(player,delivered)=>{
  const job=active(player);if(!job||!job.awaiting||!job.route)return;
  const route=routes.find(r=>r.id===job.route);if(!route)return;
- if(delivered.cargoId!==route.cargo ||
- delivered.source.cityId!==route.source.city || delivered.source.companyId!==route.source.company ||
- delivered.destination.cityId!==route.destination.city || delivered.destination.companyId!==route.destination.company)return;
+ // JobDelivered does not expose cargo/source/destination in the installed SDK.
+ // Verify against the server-owned native active job when available.
+ // If OpenRoadMP clears player.job before this event, fail closed rather than
+ // rewarding an unrelated delivery. We can add a lifecycle snapshot once the
+ // precise event ordering has been verified on the running server.
+ const native=player.job;
+ if(!native)return;
+ if(native.cargo!==route.cargo ||
+ native.source.city!==route.source.city || native.source.company!==route.source.company ||
+ native.destination.city!==route.destination.city || native.destination.company!==route.destination.company)return;
  db.prepare("UPDATE contracts SET verified=verified+1,awaiting=0,route=NULL WHERE id=? AND account=? AND status='active' AND awaiting=1").run(job.id,account(player));
 });
 mp.events.on("jobCancelled",(player)=>{
