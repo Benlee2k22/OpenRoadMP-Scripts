@@ -45,6 +45,7 @@ p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
 ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#8754ad;border-radius:12px}
 @media(max-width:800px){aside{width:175px}.brand{font-size:19px}main{padding:18px}.cards{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
 .brand-logo{margin:0 2px 4px;display:flex;align-items:center;justify-content:center;min-height:126px}.brand-logo img{width:100%;max-width:195px;height:125px;object-fit:contain;filter:drop-shadow(0 0 15px #a52bff66)}
+.truck-card{padding:14px!important;overflow:hidden}.truck-card h3,.truck-card p,.truck-card .value,.truck-card>.muted{margin-left:8px;margin-right:8px}.truck-card button{margin-left:7px!important}.truck-preview{position:relative;width:100%;aspect-ratio:420/176;margin-bottom:14px;border-radius:13px;overflow:hidden;border:1px solid #b26aff44;background:#171027}.truck-preview svg{display:block;width:100%;height:100%}.preview-label{position:absolute;left:9px;bottom:7px;padding:4px 7px;background:#100b1cbb;border-radius:5px;color:#d6bde9;font-size:9px;letter-spacing:.4px}
 </style></head>
 <body><div class="tablet"><aside><div class="brand brand-logo"><img src="globalmp-logo.webp" alt="GlobalMP logo"></div><div class="side-sub">DRIVE TOGETHER</div><nav>
 <button class="active" data-page="dashboard">Dashboard</button>
@@ -84,12 +85,38 @@ async function overview(){
 }
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const message=e=>{const el=document.querySelector("#message");if(el)el.textContent=e};
-async function garage(){
+
+// Self-contained truck illustrations: no external URLs, so they work in the game browser.
+// These are representative previews, not exact photographs of each model.
+const truckPreview=(brand,model)=>{
+ const seed=(brand+" "+model).split("").reduce((n,ch)=>((n*31+ch.charCodeAt(0))>>>0),0);
+ const palette=["#9c53ee","#4589dd","#e8eaf2","#e34862","#26a4a1","#d9a34c"];
+ const body=palette[seed%palette.length];
+ const badge=esc(brand).slice(0,28);
+ const high=/scania|volvo|mercedes/i.test(brand),cab=high?80:72;
+ return '<div class="truck-preview"><svg viewBox="0 0 420 176" role="img" aria-label="Illustration of '+esc(brand+" "+model)+'" xmlns="http://www.w3.org/2000/svg">'+
+ '<defs><linearGradient id="sky'+seed+'" x2="1" y2="1"><stop stop-color="#422063"/><stop offset="1" stop-color="#101526"/></linearGradient><linearGradient id="paint'+seed+'" x2="0" y2="1"><stop stop-color="'+body+'"/><stop offset="1" stop-color="#181426"/></linearGradient></defs>'+
+ '<rect width="420" height="176" rx="15" fill="url(#sky'+seed+')"/><path d="M0 142H420" stroke="#b36dff" stroke-width="2" opacity=".5"/>'+
+ '<path d="M26 137L60 116H218L244 136Z" fill="#0a0b15" stroke="#a68bb9"/>'+
+ '<path d="M167 52H344Q355 52 357 65V130H162Z" fill="#222334" stroke="#77758a" stroke-width="2"/>'+
+ '<path d="M174 61H344V119H174Z" fill="#363b53"/>'+
+ '<path d="M32 126L48 65Q52 52 72 52H139Q156 52 157 68V136H32Z" fill="url(#paint'+seed+')" stroke="#d2b4ef" stroke-width="2"/>'+
+ '<path d="M61 62H134Q142 62 142 73V96H51Z" fill="#111e38" stroke="#8bb2d2" stroke-width="2"/>'+
+ '<path d="M51 104H146M47 115H149M44 126H150" stroke="#d6d4e5" stroke-width="3" opacity=".7"/>'+
+ '<path d="M33 130H365V140H33Z" fill="#161524"/>'+
+ '<circle cx="95" cy="139" r="21" fill="#090911" stroke="#6e6788" stroke-width="4"/><circle cx="95" cy="139" r="9" fill="#a2a0b8"/>'+
+ '<circle cx="282" cy="139" r="20" fill="#090911" stroke="#6e6788" stroke-width="4"/><circle cx="282" cy="139" r="9" fill="#a2a0b8"/>'+
+ '<circle cx="333" cy="139" r="20" fill="#090911" stroke="#6e6788" stroke-width="4"/><circle cx="333" cy="139" r="9" fill="#a2a0b8"/>'+
+ '<path d="M38 119H52V129H35Z" fill="#f4e4a6"/>'+
+ '<text x="390" y="27" text-anchor="end" fill="#ffffff" opacity=".8" font-size="13" font-family="Arial" font-weight="bold">'+badge+'</text>'+
+ '</svg><span class="preview-label">Illustrative preview</span></div>';
+};
+\nasync function garage(){
  const d=await call("garageState");
  const eur=n=>"€"+Number(n).toLocaleString();
  content.innerHTML='<div class="hero"><div class="hero-kicker">GLOBALMP MOTOR GROUP</div><h2>My garage & dealership</h2><p>Purchase your next truck, manage your fleet and keep your saved tuning.</p></div><div class="cards"><div class="card"><span class="card-icon">€</span><div class="muted">Available balance</div><div class="value">'+eur(d.money)+'</div></div><div class="card"><span class="card-icon">▣</span><div class="muted">Garage capacity</div><div class="value">'+d.owned.length+' / '+d.slots+'</div></div><div class="card"><span class="card-icon">↗</span><div class="muted">Vehicles owned</div><div class="value">'+d.owned.length+'</div></div></div><h2>My collection</h2><div id="owned" class="actions"></div><h2>Truck showroom</h2><input id="truckFilter" placeholder="Search trucks or manufacturers" style="width:100%;margin:0 0 15px"><div id="dealer" class="actions"></div><p id="message"></p>';
- document.querySelector("#owned").innerHTML=d.owned.map(t=>'<div class="card"><span class="card-icon">🚛</span><h3>'+esc(t.label)+'</h3><p class="muted">'+t.parts+' saved tuning parts '+(t.id===d.current?' · CURRENT TRUCK':'')+'</p>'+(t.id===d.current?'<span class="muted">Currently driving · Switch trucks to sell this one</span>':'<button data-garage="drive" data-id="'+t.id+'">Drive truck</button><button data-garage="sell" data-id="'+t.id+'">Sell for '+eur(Math.floor(t.price*.6))+'</button>')+'</div>').join("")||'<p class="muted">No owned vehicles yet. Browse the showroom below.</p>';
- const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.catalog.filter(t=>t.label.toLowerCase().includes(q)).slice(0,120).map(t=>'<div class="card"><span class="card-icon">🚚</span><div class="muted">'+esc(t.brand)+'</div><h3>'+esc(t.model)+'</h3><div class="value" style="font-size:22px">'+eur(t.price)+'</div><p class="muted">'+(t.dlc?'Requires DLC':'Standard truck')+'</p><button data-garage="buy" data-id="'+esc(t.name)+'" '+(d.money<t.price||d.owned.length>=d.slots?'disabled':'')+'>Purchase truck</button></div>').join("")};
+ document.querySelector("#owned").innerHTML=d.owned.map(t=>'<div class="card truck-card">'+truckPreview(t.label.split(' ')[0],t.label.split(' ').slice(1).join(' '))+'<h3>'+esc(t.label)+'</h3><p class="muted">'+t.parts+' saved tuning parts '+(t.id===d.current?' · CURRENT TRUCK':'')+'</p>'+(t.id===d.current?'<span class="muted">Currently driving · Switch trucks to sell this one</span>':'<button data-garage="drive" data-id="'+t.id+'">Drive truck</button><button data-garage="sell" data-id="'+t.id+'">Sell for '+eur(Math.floor(t.price*.6))+'</button>')+'</div>').join("")||'<p class="muted">No owned vehicles yet. Browse the showroom below.</p>';
+ const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.catalog.filter(t=>t.label.toLowerCase().includes(q)).slice(0,120).map(t=>'<div class="card truck-card">'+truckPreview(t.brand,t.model)+'<div class="muted">'+esc(t.brand)+'</div><h3>'+esc(t.model)+'</h3><div class="value" style="font-size:22px">'+eur(t.price)+'</div><p class="muted">'+(t.dlc?'Requires DLC':'Standard truck')+'</p><button data-garage="buy" data-id="'+esc(t.name)+'" '+(d.money<t.price||d.owned.length>=d.slots?'disabled':'')+'>Purchase truck</button></div>').join("")};
  document.querySelector("#truckFilter").oninput=show;show();
 }
 async function vtc(){
