@@ -107,7 +107,7 @@ export function assignFreight(player:OpenRoadMP.Player,routeId:unknown){
  const tier=tiers.find(t=>t.id===job.tier);if(!tier)throw Error("Unknown contract");
  if(job.verified>=tier.deliveries)throw Error("Claim your completed contract");
  if(job.awaiting)throw Error("A freight delivery is already assigned");
- const route=nearbyRoutes(player).find(r=>r.id===routeId);if(!route)throw Error("Freight offer expired or no longer nearby. Refresh the tablet.");
+ const route=typeof routeId==="string"?parseRoute(routeId):undefined;if(!route)throw Error("Freight route is invalid or no longer supported by the map.");
  // The native game API validates companies, cargo and cities and sets pickup navigation.
  // Assignment will replace an existing game job, so do not silently overwrite one.
  if(player.job)throw Error("Finish or cancel your existing ETS2 freight job first");
