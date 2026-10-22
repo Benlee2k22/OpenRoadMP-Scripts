@@ -53,3 +53,11 @@ Copy `tablet/progression.ts`, `tablet/tablet.ts`, and `tablet/client/tablet.html
 Rewards are claimed manually, credited using the existing money API and saved in `data/globalmp-progression.db`. Back up this new database alongside `freeroam.db`, `globalmp-starters.db` and VTC data. The current reward claim implementation writes the claim record and balance in separate databases, so unexpected process failure between writes could cause a partial reward; it needs a single-database transaction or recovery ledger before high-scale production.
 
 The existing dealership achievement gates use completed-delivery totals (25/50/100) and are not tied to clicking Claim Reward. This version does not modify the game's base delivery payout or native XP. It has not been typechecked on your server. Run `npm run check` before restarting.
+
+## Phase 4 — Freight Exchange / Jobs
+
+Install `tablet/jobs.ts`, updated `tablet/tablet.ts` and `tablet/client/tablet.html`. The tablet Jobs page now offers Local Freight (1 delivery / €1,500), Regional Logistics (3 / €6,000), and Long Haul (5 / €15,000). Players can have one active contract, cancel it, view server-recorded progress, claim the completion bonus once, and browse the latest 20 completed contracts.
+
+**Verification scope:** Contracts use the increase in the existing freeroam `loadPlayer().deliveries` counter since acceptance, read on the server. They do not trust client-reported completions and do not duplicate normal delivery earnings. Existing career XP automatically reflects those same deliveries. However, they **do not yet** enforce a cargo type, source/destination, actual distance, damage or trailer condition: those need an authenticated native job-completion event and associated payload. Don't advertise these as route-specific contracts yet.
+
+New `data/globalmp-jobs.db` holds contracts and history. Back up the entire freeroam directory and its `data` folder. No existing DB tables are overwritten. Completion status is stored before awarding the bonus; cross-database payment isn't atomic, so unexpected crashes may require reconciliation. This is a staged release and must be typechecked/tested before production.
