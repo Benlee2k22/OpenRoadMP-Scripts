@@ -15,6 +15,10 @@ export function toggleTablet(player: OpenRoadMP.Player): void {
   }
   const page = mp.browsers.create(player, "tablet.html");
   tablets.set(player.id, page);
+  page.on("closeTablet", (who) => {
+    page.close();
+    tablets.delete(who.id);
+  });
   page.on("overview", (who) => {
     const saved = loadPlayer(who, SETTINGS.startMoney);
     return {
