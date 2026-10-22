@@ -112,8 +112,7 @@ export function assignFreight(player:OpenRoadMP.Player,routeId:unknown){
  // Assignment will replace an existing game job, so do not silently overwrite one.
  if(player.job)throw Error("Finish or cancel your existing ETS2 freight job first");
  new JobBuilder({cargo:route.cargo,source:route.source,destination:route.destination}).assign(player);
- const assigned=player.job;
- console.log("[GlobalMP jobs] native assignment result",player.name,assigned?JSON.stringify({cargo:assigned.cargo,source:assigned.source,destination:assigned.destination}):"player.job is null");
+ console.log("[GlobalMP jobs] native assignment invoked",player.name,route.id);
  const pickup=mp.world.company(route.source.company,route.source.city);
  if(pickup){mp.players.navigateTo(player,pickup.position);console.log("[GlobalMP jobs] pickup GPS set",player.name,route.source.city,route.source.company);}
  db.prepare("UPDATE contracts SET route=?,awaiting=1 WHERE id=? AND account=? AND status='active'").run(route.id,job.id,account(player));
