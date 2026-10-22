@@ -1,45 +1,66 @@
 <!doctype html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-:root{--accent:#a31bff;--accent2:#7421d9;--line:#41305d;--muted:#a8a1bc}
-*{box-sizing:border-box}body{margin:0;background:transparent;color:#f7f4ff;font:14px Inter,system-ui,Arial,sans-serif}
-.tablet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1180px,95vw);height:min(740px,90vh);display:flex;border:1px solid #6b458d;border-radius:28px;overflow:hidden;background:linear-gradient(125deg,#0a0913,#100c20 65%,#160c28);box-shadow:0 0 0 5px #0a0815bb,0 30px 110px #000e,0 0 48px #7213c02e}
-aside{width:228px;flex-shrink:0;background:linear-gradient(180deg,#0c0a17,#171028);padding:28px 14px;border-right:1px solid #342347;display:flex;flex-direction:column}
-.brand{font-size:26px;letter-spacing:1.5px;font-weight:800;color:#d5a4ff;margin:8px 13px 30px;text-shadow:0 0 24px #a31bff66}
-nav button{display:block;width:100%;padding:15px 16px;margin-bottom:7px;border:1px solid transparent;border-radius:11px;text-align:left;background:transparent;color:#c4b9d9;cursor:pointer;font-weight:600;transition:.16s}
-nav button::before{content:'◇';color:#bd5cff;margin-right:13px;font-size:17px}
-nav button.active,nav button:hover{background:linear-gradient(95deg,#7d0bdf,#4b168e);color:white;border-color:#a742ed;box-shadow:0 4px 22px #890cff30}
-main{flex:1;padding:31px 34px;overflow:auto;background:radial-gradient(ellipse at 75% -10%,#5d168b35,transparent 50%)}
-.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding-bottom:21px;border-bottom:1px solid #302541}
-.muted{color:var(--muted)}.small{font-size:11px;letter-spacing:1.8px;font-weight:700}
-.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:24px 0}
-.card{background:linear-gradient(140deg,#20172f,#100f1d);padding:22px;border:1px solid #38284d;border-radius:15px;box-shadow:inset 0 1px #ffffff08}
-.value{font-size:30px;font-weight:800;margin-top:10px;color:white;letter-spacing:-1px}
-.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
-.actions button{padding:19px;text-align:left;background:linear-gradient(130deg,#27143e,#171324);border:1px solid #60308e;border-radius:13px;color:white;cursor:pointer;transition:.2s;font-weight:600}
-.actions button:hover{background:linear-gradient(120deg,#7212b4,#3c146d);border-color:#c15cff;transform:translateY(-2px);box-shadow:0 5px 25px #9c1bff33}
-button{font:inherit;cursor:pointer}button:not(nav button):not(.actions button){border:1px solid #863bc0;background:linear-gradient(115deg,#7f0fc5,#4b188a);border-radius:9px;color:white;padding:10px 15px;margin:3px 4px 3px 0;font-weight:600}
-button:not(nav button):not(.actions button):hover{filter:brightness(1.22)}
-input,select,textarea{background:#151123;color:white;border:1px solid #65438b;border-radius:9px;padding:12px;margin:5px;max-width:100%}
-h1{margin:5px 0 0;font-size:29px;letter-spacing:-.7px}h2{font-size:18px;margin:25px 0 15px}h3{font-size:15px;margin:22px 0 10px}p{line-height:1.6}#message{margin-top:16px;color:#dbadff}
-::-webkit-scrollbar{width:7px}::-webkit-scrollbar-thumb{background:#58337e;border-radius:9px}
-@media(max-width:800px){aside{width:170px}.brand{font-size:19px}main{padding:20px}.cards{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+:root{--purple:#ba62ff;--violet:#8a23ed;--text:#f9f7ff;--muted:#b7afc8}
+*{box-sizing:border-box}
+body{margin:0;background:transparent;color:var(--text);font:14px Inter,system-ui,Arial,sans-serif}
+.tablet{position:absolute;inset:4% 3%;display:flex;overflow:hidden;border-radius:38px;border:2px solid #a278c5a8;background:linear-gradient(135deg,#19152bc9,#0b0c1ddf 55%,#17112ed9);-webkit-backdrop-filter:blur(28px) saturate(1.45);backdrop-filter:blur(28px) saturate(1.45);box-shadow:0 0 0 5px #06030ddc,0 0 0 7px #bca0d366,0 28px 90px #000c,inset 0 1px 2px #ffffff66}
+.tablet:before{content:'';position:absolute;left:37%;right:37%;top:0;height:5px;background:linear-gradient(90deg,transparent,#fff9,transparent);border-radius:100%;pointer-events:none;z-index:3}
+aside{width:224px;flex-shrink:0;padding:30px 14px;background:linear-gradient(170deg,#211638bd,#080b18d9);border-right:1px solid #ffffff22;display:flex;flex-direction:column}
+.brand{font-size:25px;letter-spacing:1.4px;font-weight:900;margin:11px 11px 9px;color:#d5a3ff;text-shadow:0 0 28px #b33bff99}
+.side-sub{margin:0 12px 32px;font-size:10px;letter-spacing:2.3px;color:#a89dbd}
+nav button{display:block;width:100%;text-align:left;border:1px solid transparent;background:transparent;color:#c7bed7;border-radius:13px;padding:15px;margin-bottom:6px;font-weight:600;cursor:pointer;transition:.18s}
+nav button:before{content:'◈';display:inline-block;width:25px;color:#c67bff;font-size:17px}
+nav button.active,nav button:hover{color:#fff;border-color:#c47aff6b;background:linear-gradient(100deg,#a331f2a8,#6935ae80);box-shadow:inset 0 1px #ffffff3d,0 5px 25px #982dff30}
+.sidebar-footer{margin-top:auto;padding:15px 12px;border-top:1px solid #ffffff24;color:#d7c5ed;font-size:12px}
+.status-dot{display:inline-block;width:8px;height:8px;background:#31e998;border-radius:50%;box-shadow:0 0 12px #31e998;margin-right:8px}
+main{flex:1;min-width:0;padding:29px 32px;overflow:auto;background:radial-gradient(ellipse at 85% 0%,#7f37ce48,transparent 43%),radial-gradient(ellipse at 10% 100%,#4c329c36,transparent 52%)}
+.top{display:flex;align-items:center;gap:18px;padding-bottom:20px;border-bottom:1px solid #ffffff24}
+.top>div:first-child{flex:1}
+h1{font-size:28px;letter-spacing:-1px;margin:5px 0 0;font-weight:800}
+.small{font-size:10px;letter-spacing:2px;font-weight:800}
+.muted{color:var(--muted)}
+#online{border:1px solid #ffffff26;border-radius:100px;background:#ffffff0e;padding:10px 14px;white-space:nowrap}
+#online:before{content:'●';color:#2de99a;margin-right:8px}
+#closeTablet{background:#ffffff12!important;border:1px solid #ffffff33!important;border-radius:12px!important;color:white!important;padding:11px 17px!important}
+.hero{position:relative;overflow:hidden;border-radius:23px;padding:28px 30px;margin:22px 0 18px;background:radial-gradient(ellipse at 85% 10%,#d35aff70,transparent 45%),linear-gradient(115deg,#5e258ac9,#271d4ab8 62%,#151329d9);border:1px solid #e4a6ff62;box-shadow:inset 0 1px #ffffff66,0 15px 35px #140a2b55}
+.hero:after{content:'✦';position:absolute;right:9%;top:-62px;font-size:230px;line-height:1;color:#ffffff16;transform:rotate(-12deg);pointer-events:none}
+.hero h2{font-size:28px;letter-spacing:-1px;margin:7px 0 8px;position:relative;z-index:1}
+.hero p{max-width:480px;margin:0;position:relative;z-index:1}
+.hero-kicker{font-size:10px;letter-spacing:2px;color:#e3c5ff;font-weight:800}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:18px 0 24px}
+.card{padding:22px;background:linear-gradient(145deg,#ffffff1b,#ffffff09);border:1px solid #ffffff2b;border-radius:18px;box-shadow:inset 0 1px #ffffff2c,0 9px 24px #0002;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.card .muted{font-size:12px}.value{font-size:29px;letter-spacing:-1px;font-weight:850;margin:13px 0 6px}
+.card-icon{display:inline-flex;width:39px;height:39px;align-items:center;justify-content:center;border:1px solid #cc8cff66;border-radius:12px;background:#ac3dff33;color:#e8bdff;font-size:20px;margin-bottom:14px}
+.section-head{display:flex;justify-content:space-between;align-items:center;margin:20px 0 13px}
+h2{font-size:18px;margin:22px 0 13px}h3{font-size:15px;margin:22px 0 10px}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.actions button{background:linear-gradient(135deg,#a45cf72e,#ffffff0c);border:1px solid #b881f45c;border-radius:16px;color:white;text-align:left;padding:21px;cursor:pointer;transition:.18s;font-weight:650;min-height:66px}
+.actions button:hover{transform:translateY(-2px);background:#7c30be8a;box-shadow:0 12px 28px #5e1c9c55}
+button{font:inherit;cursor:pointer}button:not(nav button):not(.actions button){background:linear-gradient(115deg,#9622e5,#6423b4);border:1px solid #d28dff7d;border-radius:11px;color:white;padding:10px 15px;margin:3px 5px 3px 0;font-weight:600;box-shadow:inset 0 1px #ffffff38}
+button:hover{filter:brightness(1.12)}
+input,select,textarea{background:#ffffff12;color:white;border:1px solid #b98dd66e;border-radius:10px;padding:12px;margin:5px;max-width:100%}select option{background:#1b1530}
+p{line-height:1.6}#message{color:#e4b8ff;margin-top:16px}
+::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#8754ad;border-radius:12px}
+@media(max-width:800px){aside{width:175px}.brand{font-size:19px}main{padding:18px}.cards{grid-template-columns:1fr}.actions{grid-template-columns:1fr}}
 </style></head>
-<body><div class="tablet"><aside><div class="brand">GLOBAL<span style="color:white">MP</span></div><nav>
+<body><div class="tablet"><aside><div class="brand">GLOBAL<span style="color:white">MP</span></div><div class="side-sub">DRIVE TOGETHER</div><nav>
 <button class="active" data-page="dashboard">Dashboard</button>
 <button data-page="jobs">Jobs</button><button data-page="garage">Garages</button>
 <button data-page="company">Companies & VTCs</button><button data-page="convoys">Convoys</button>
 <button data-page="settings">Settings</button>
-</nav></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span><button id="closeTablet" style="background:#6c3eb5;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer">✕ Close</button></div>
-<div id="content"><p class="muted" id="welcome">Loading driver details…</p>
+</nav><div class="sidebar-footer"><span class="status-dot"></span> GLOBALMP NETWORK<br><span class="muted">Driver services online</span></div></aside><main><div class="top"><div><div class="muted small">GLOBALMP DRIVER PORTAL</div><h1 id="heading">Dashboard</h1></div><span class="muted" id="online">Loading…</span><button id="closeTablet" style="background:#6c3eb5;color:white;border:0;border-radius:8px;padding:10px 14px;cursor:pointer">✕ Close</button></div>
+<div id="content">
+<div class="hero"><div class="hero-kicker">✦ YOUR DRIVER SPACE</div><h2 id="welcome">Welcome back, driver</h2><p class="muted">Your journey starts here. Manage your fleet, connect with your VTC and explore the open road.</p></div>
+<div class="section-head"><h2>Driver overview</h2><span class="muted">LIVE STATISTICS</span></div>
 <div class="cards">
-<div class="card"><div class="muted">Balance</div><div class="value" id="money">—</div></div>
-<div class="card"><div class="muted">Deliveries</div><div class="value" id="deliveries">—</div></div>
-<div class="card"><div class="muted">Distance driven</div><div class="value" id="distance">—</div></div>
-</div><h2>Quick actions</h2><div class="actions">
-<button data-action="garage">Open my garage →</button><button data-action="company">Open company management →</button>
-</div><p id="message"></p></div></main></div>
+<div class="card"><span class="card-icon">€</span><div class="muted">Account balance</div><div class="value" id="money">—</div><span class="muted">Available funds</span></div>
+<div class="card"><span class="card-icon">▣</span><div class="muted">Completed deliveries</div><div class="value" id="deliveries">—</div><span class="muted">Your trucking career</span></div>
+<div class="card"><span class="card-icon">↗</span><div class="muted">Distance driven</div><div class="value" id="distance">—</div><span class="muted">Across the road network</span></div>
+</div>
+<div class="section-head"><h2>Quick access</h2><span class="muted">EXPLORE GLOBALMP</span></div>
+<div class="actions"><button data-action="garage">🚛 &nbsp; My garage & fleet &nbsp; →</button><button data-action="company">♛ &nbsp; My VTC & companies &nbsp; →</button></div><p id="message"></p></div></main></div>
 <script>
 // Match OpenRoadMP's built-in editor: capture the mouse while the tablet is open.
 if (window.mp && typeof mp.cursor === "function") mp.cursor(true);
@@ -53,7 +74,7 @@ const content=document.querySelector("#content"), original=content.innerHTML;
 async function overview(){
  content.innerHTML=original;
  try{const d=await call("overview");
- document.querySelector("#welcome").textContent="Welcome back, "+d.name+" • "+d.server;
+ document.querySelector("#welcome").textContent="Welcome back, "+d.name+" ✦";
  document.querySelector("#online").textContent=d.online+" online";
  document.querySelector("#money").textContent="€"+Number(d.money).toLocaleString();
  document.querySelector("#deliveries").textContent=Number(d.deliveries).toLocaleString();
@@ -90,7 +111,8 @@ document.querySelectorAll("nav button").forEach(b=>b.onclick=async()=>{
  try{if(p==="dashboard")await overview();else if(p==="garage")await garage();else if(p==="company")await vtc();else content.innerHTML='<p class="muted">This section is not connected yet.</p>';}catch(e){content.innerHTML='<p id="message"></p>';message(e.message);}
 });
 document.addEventListener("click",async e=>{
- const b=e.target.closest("[data-garage],[data-vtc]");if(!b)return;
+ const b=e.target.closest("[data-garage],[data-vtc],[data-action]");if(!b)return;
+ if(b.dataset.action){document.querySelector('nav [data-page="'+(b.dataset.action==="garage"?"garage":"company")+'"]').click();return;}
  try{
  if(b.dataset.garage){if(b.dataset.garage==="none")return;if(b.dataset.garage==="giveback"&&!confirm("Give back this truck?"))return;await call("garageAction",b.dataset.garage,b.dataset.id);await garage();}
  else{
