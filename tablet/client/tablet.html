@@ -123,7 +123,8 @@ const truckPreview=(brand,model)=>{
  '<text x="390" y="27" text-anchor="end" fill="#ffffff" opacity=".8" font-size="13" font-family="Arial" font-weight="bold">'+badge+'</text>'+
  '</svg><span class="preview-label">Illustrative preview</span></div>';
 };
-\nasync function garage(){
+
+async function garage(){
  const d=await call("garageState");
  const eur=n=>"€"+Number(n).toLocaleString();
  content.innerHTML='<div class="hero"><div class="hero-kicker">GLOBALMP MOTOR GROUP</div><h2>My garage & dealership</h2><p>Purchase your next truck, manage your fleet and keep your saved tuning.</p></div><div class="cards"><div class="card"><span class="card-icon">€</span><div class="muted">Available balance</div><div class="value">'+eur(d.money)+'</div></div><div class="card"><span class="card-icon">▣</span><div class="muted">Garage capacity</div><div class="value">'+d.owned.length+' / '+d.slots+'</div></div><div class="card"><span class="card-icon">↗</span><div class="muted">Vehicles owned</div><div class="value">'+d.owned.length+'</div></div></div><h2>My collection</h2><div id="owned" class="actions"></div><h2>Truck showroom</h2><input id="truckFilter" placeholder="Search trucks or manufacturers" style="width:100%;margin:0 0 15px"><div id="dealer" class="actions"></div><p id="message"></p>';
