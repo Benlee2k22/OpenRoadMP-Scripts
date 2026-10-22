@@ -61,3 +61,13 @@ Install `tablet/jobs.ts`, updated `tablet/tablet.ts` and `tablet/client/tablet.h
 **Verification scope:** Contracts use the increase in the existing freeroam `loadPlayer().deliveries` counter since acceptance, read on the server. They do not trust client-reported completions and do not duplicate normal delivery earnings. Existing career XP automatically reflects those same deliveries. However, they **do not yet** enforce a cargo type, source/destination, actual distance, damage or trailer condition: those need an authenticated native job-completion event and associated payload. Don't advertise these as route-specific contracts yet.
 
 New `data/globalmp-jobs.db` holds contracts and history. Back up the entire freeroam directory and its `data` folder. No existing DB tables are overwritten. Completion status is stored before awarding the bonus; cross-database payment isn't atomic, so unexpected crashes may require reconciliation. This is a staged release and must be typechecked/tested before production.
+
+## Phase 4.1 — Real freight assignment and pickup GPS
+
+The updated `jobs.ts` now uses OpenRoadMP's documented `JobBuilder.assign(player)` to assign a **real freight job**. The game provides pickup navigation, trailer spawning and navigation to the delivery company. The tablet shows the native job's cargo, source and destination, and requires matching `jobDelivered` event ids before progressing a GlobalMP contract. Normal freight payouts and career XP remain managed by the game/freeroam. No duplicate base payout is issued.
+
+Two starter route definitions are included, based on OpenRoadMP documentation examples: apples from Tradeaux Düsseldorf to DFH Hamburg, and gravel from Steinbruch Magdeburg to Sanbuild Leipzig. The server validates combinations at assignment; if a route isn't available in the running game's version/map, assignment throws and does not record the job. Extend the catalogue using the official job finder, not guessed city/company ids.
+
+Existing contracts and history are retained; the new `verified`, `route`, `awaiting` columns are added via additive migration. **Old active contracts begin at 0 newly verified deliveries** because previous completion counts were not tied to a specific cargo or route. After each successful delivery, choose another route until the contract is complete. If an ETS2 job is already active, finish or cancel it before assigning a GlobalMP route. Canceling the GlobalMP contract does not cancel an existing native game job.
+
+Back up `data/globalmp-jobs.db` and `data/freeroam.db` before deployment. Compile with `npm run check` and test on a private server before release.
