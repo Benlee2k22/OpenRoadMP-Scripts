@@ -2,11 +2,11 @@
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
 *{box-sizing:border-box}body{margin:0;background:transparent;font:14px system-ui,Arial;color:#eee}
-.tablet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1000px,92vw);height:min(660px,86vh);display:flex;border:2px solid #39304e;border-radius:22px;overflow:hidden;background:#12101d;box-shadow:0 24px 85px #000b}
-aside{width:215px;background:#1d172d;padding:25px 15px;border-right:1px solid #38304b}
-.brand{font-size:23px;font-weight:800;color:#b994ff;margin:4px 10px 32px}nav button{display:block;width:100%;padding:13px;margin-bottom:7px;border:0;border-radius:9px;text-align:left;background:transparent;color:#c9c1d9;cursor:pointer}nav button.active,nav button:hover{background:#7043b5;color:white}
-main{flex:1;padding:28px;overflow:auto}.top{display:flex;justify-content:space-between;align-items:center}.muted{color:#a59bb9}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0}.card{background:#211a31;padding:19px;border:1px solid #40334f;border-radius:12px}.value{font-size:25px;font-weight:750;margin-top:9px;color:white}
-.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.actions button{padding:19px;text-align:left;background:#2a203e;border:1px solid #594377;border-radius:12px;color:white;cursor:pointer}.actions button:hover{background:#44305f}
+.tablet{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:min(1120px,94vw);height:min(720px,88vh);display:flex;border:2px solid #39304e;border-radius:24px;overflow:hidden;background:linear-gradient(145deg,#141022,#0c0c16);box-shadow:0 32px 110px #000d}
+aside{width:215px;background:linear-gradient(180deg,#211633,#14101f);padding:28px 17px;border-right:1px solid #38304b}
+.brand{font-size:25px;letter-spacing:1px;font-weight:850;color:#b994ff;margin:4px 10px 32px}nav button{display:block;width:100%;padding:15px;margin-bottom:9px;border:0;border-radius:9px;text-align:left;background:transparent;color:#c9c1d9;cursor:pointer}nav button.active,nav button:hover{background:#7043b5;color:white}
+main{flex:1;padding:36px;overflow:auto;background:radial-gradient(ellipse at top right,#36204a55,transparent 60%)}.top{display:flex;justify-content:space-between;align-items:center}.muted{color:#a59bb9}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:26px 0}.card{background:linear-gradient(135deg,#2b2040,#1b172a);padding:23px;border:1px solid #4d3967;border-radius:16px}.value{font-size:29px;font-weight:800;margin-top:9px;color:white}
+.actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.actions button{padding:22px;text-align:left;background:linear-gradient(135deg,#35234f,#211a32);border:1px solid #594377;border-radius:14px;color:white;cursor:pointer;transition:background .2s,transform .2s}.actions button:hover{background:#593579;transform:translateY(-2px)}
 #message{margin-top:16px;color:#cfb6ff}.small{font-size:12px}h1{margin:0}button{font:inherit}
 </style></head>
 <body><div class="tablet"><aside><div class="brand">GLOBAL<span style="color:white">MP</span></div><nav>
@@ -47,10 +47,10 @@ const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&
 const message=e=>{const el=document.querySelector("#message");if(el)el.textContent=e};
 async function garage(){
  const d=await call("garageState");
- content.innerHTML='<p class="muted">Garage: '+d.owned.length+' / '+d.slots+' slots. Existing tuning is preserved.</p><h2>My trucks</h2><div id="owned" class="actions"></div><h2>Dealership</h2><input id="truckFilter" placeholder="Filter trucks by name" style="padding:12px;background:#251d36;color:white;border:1px solid #584875;border-radius:8px;width:100%;margin-bottom:12px"><div id="dealer" class="actions"></div><p id="message"></p>';
+ content.innerHTML='<p class="muted">Garage: '+d.owned.length+' / '+d.slots+' slots. Existing tuning is preserved.</p><h2>My trucks</h2><div id="owned" class="actions"></div><h2>Get more vehicles</h2><div id="dealer" class="actions"></div><p id="message"></p>';
  document.querySelector("#owned").innerHTML=d.owned.map(t=>'<button data-garage="'+(t.id===d.current?'none':'drive')+'" data-id="'+t.id+'">'+esc(t.label)+' · '+t.parts+' saved parts '+(t.id===d.current?'(Driving)':'— Drive')+'</button>'+(t.id===d.current?'':'<button data-garage="giveback" data-id="'+t.id+'">Give back '+esc(t.label)+'</button>')).join("")||'<p>No trucks yet</p>';
- const show=()=>{const q=document.querySelector("#truckFilter").value.toLowerCase();document.querySelector("#dealer").innerHTML=d.dealer.filter(t=>t.label.toLowerCase().includes(q)).slice(0,100).map(t=>'<button data-garage="take" data-id="'+esc(t.name)+'">'+esc(t.label)+(t.dlc?' (DLC)':'')+' — Take and drive</button>').join("")};
- document.querySelector("#truckFilter").oninput=show;show();
+ document.querySelector("#dealer").innerHTML='<div class="card" style="grid-column:1/-1"><strong>Purchases only</strong><p class="muted">Only vehicles you already own appear above. Use the authorised in-game dealership to purchase additional trucks.</p></div>';
+
 }
 async function vtc(){
  const d=await call("vtcState");let html='';
