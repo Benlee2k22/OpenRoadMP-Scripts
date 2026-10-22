@@ -26,9 +26,9 @@ mp.events.on("playerLeave",player=>tablets.delete(player.id));
 
 // Recovery command for orphaned native freight jobs from earlier tablet builds.
 // Does not alter GlobalMP contract history or cancel an unrelated contract.
-mp.commands.add("canceljob",(player)=>{
- if(!player.job){mp.players.navigateTo(player,null);mp.players.message(player,"No active freight job. GPS destination cleared.");return;}
+mp.commands.add("canceljob","Cancel your active freight job and clear GPS",(player:OpenRoadMP.Player)=>{
+ if(!player.job){mp.players.navigateTo(player,null);return;}
  mp.players.cancelJob(player);
  mp.players.navigateTo(player,null);
- mp.players.message(player,"Your active freight job was cancelled and GPS cleared.");
+ 
 });
